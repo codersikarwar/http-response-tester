@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTTP Response Tester</title>
+</head>
+<body>
+    <h1>HTTP Response Tester</h1>
+
+    <form action="/info" method="get">
+        <label for="url">Enter URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Get Info</button>
+    </form>
+
+    {% if result %}
+        <h2>Results:</h2>
+        <pre>{{ result }}</pre>
+    {% elif error %}
+        <p style="color: red;">Error: {{ error }}</p>
+    {% endif %}
+</body>
+</html>
