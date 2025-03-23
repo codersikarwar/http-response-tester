@@ -5,7 +5,7 @@ import requests
 
 app = FastAPI()
 
-templates = Jinja2templates(directory="templates")  # Create a "templates" directory
+templates = Jinja2Templates(directory="templates")  # Create a "templates" directory
 
 def get_https_info(url):
     try:
