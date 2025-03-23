@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Query
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 import requests
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")  # Create a "templates" directory
+templates = Jinja2Templates(directory="templates")
 
 def get_https_info(url):
     try:
@@ -31,13 +31,13 @@ def get_https_info(url):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None})
+    return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/info", response_class=HTMLResponse)
-async def get_url_info(request: Request, url: str):
+@app.get("/api/url", response_class=JSONResponse)
+async def get_url_info_api(url: str = Query(..., description="The URL to fetch HTTPS information from")):
     try:
         result = get_https_info(url)
-        return templates.TemplateResponse("index.html", {"request": request, "result": result})
+        return JSONResponse(content=result)
 
     except HTTPException as e:
-        return templates.TemplateResponse("index.html", {"request": request, "error": e.detail})
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
