@@ -1,8 +1,8 @@
+import requests
 from fastapi import FastAPI, HTTPException, Request, Query, status
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.openapi.utils import get_openapi
-import requests
 
 app = FastAPI()
 
@@ -10,8 +10,7 @@ templates = Jinja2Templates(directory="templates")
 
 def get_https_info(url):
     try:
-        response = requests.get(url, allow_redirects=True)
-        response.raise_for_status()
+        response = requests.get(url, allow_redirects=False) # do not follow redirects.
 
         info = {
             "status_code": response.status_code,
@@ -24,18 +23,12 @@ def get_https_info(url):
             "elapsed": response.elapsed.total_seconds(),
             "reason": response.reason,
             "content_type": response.headers.get("content-type"),
-            "final_url": response.url #added to show final url
+            "final_url": response.url #since redirects are off, this will be the first url.
         }
         return info
 
-    except requests.exceptions.HTTPError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=str(e))
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/api/url", response_class=JSONResponse)
 async def get_url_info_api(url: str = Query(..., description="The URL to fetch HTTPS information from")):
@@ -56,6 +49,10 @@ def custom_openapi():
         routes=app.routes,
     )
     app.openapi_schema = openapi_schema
-    return app.openapi_schema
+    return openapi_schema
 
 app.openapi = custom_openapi
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
