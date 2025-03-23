@@ -1,22 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HTTP Response Tester</title>
+    <title>API Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        h1 { margin-bottom: 20px; }
+        form { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"] { width: 300px; padding: 8px; margin-bottom: 10px; }
+        button { padding: 8px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        pre { background-color: #f0f0f0; padding: 10px; overflow-x: auto; }
+        #result-container { margin-top: 20px; }
+        .error { color: red; }
+    </style>
 </head>
 <body>
-    <h1>HTTP Response Tester</h1>
+    <h1>API Test</h1>
 
-    <form action="/info" method="get">
-        <label for="url">Enter URL:</label>
+    <form id="api-form">
+        <label for="url">URL:</label>
         <input type="text" id="url" name="url" required>
-        <button type="submit">Get Info</button>
+        <button type="button" onclick="testApi()">Test API</button>
     </form>
 
-    {% if result %}
-        <h2>Results:</h2>
-        <pre>{{ result }}</pre>
-    {% elif error %}
-        <p style="color: red;">Error: {{ error }}</p>
-    {% endif %}
+    <div id="result-container">
+        <h2>Result:</h2>
+        <pre id="api-result"></pre>
+    </div>
+
+    <script>
+        async function testApi() {
+            const url = document.getElementById('url').value;
+            const resultContainer = document.getElementById('api-result');
+            resultContainer.innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch(`/api/url?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultContainer.innerHTML = JSON.stringify(data, null, 2);
+                } else {
+                    resultContainer.innerHTML = `<span class="error">${JSON.stringify(data)}</span>`;
+                }
+
+            } catch (error) {
+                resultContainer.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+    </script>
 </body>
 </html>
